@@ -25,14 +25,14 @@ priority: "Medium",
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
-    if (task) {
+if (task) {
       setFormData({
-        title: task.title || "",
-        description: task.description || "",
-        category: task.category || "Work",
-        priority: task.priority || "Medium",
-status: task.status || "pending",
-        dueDate: task.dueDate ? new Date(task.dueDate).toISOString().slice(0, 16) : ""
+        title: task.title_c || "",
+        description: task.description_c || "",
+        category: task.category_c || "Work",
+        priority: task.priority_c || "Medium",
+status: task.status_c || "pending",
+        dueDate: task.due_date_c ? new Date(task.due_date_c).toISOString().slice(0, 16) : ""
       })
     } else {
       setFormData({
@@ -140,9 +140,9 @@ priority: "Medium",
                 value={formData.category}
                 onChange={(e) => handleChange("category", e.target.value)}
               >
-                {categories.map(category => (
-                  <option key={category.Id} value={category.name}>
-                    {category.name}
+{categories.map(category => (
+                  <option key={category.Id} value={category.Name}>
+                    {category.Name}
                   </option>
                 ))}
               </Select>

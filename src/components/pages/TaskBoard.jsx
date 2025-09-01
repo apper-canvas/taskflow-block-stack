@@ -45,18 +45,18 @@ const TaskBoard = () => {
 
     // Filter by category from URL
     if (categoryName) {
-      filtered = filtered.filter(task => 
-        task.category.toLowerCase() === categoryName.toLowerCase()
+filtered = filtered.filter(task => 
+        task.category_c?.toLowerCase() === categoryName.toLowerCase()
       )
     }
 
     // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase()
-      filtered = filtered.filter(task =>
-        task.title.toLowerCase().includes(query) ||
-        task.description.toLowerCase().includes(query) ||
-        task.category.toLowerCase().includes(query)
+filtered = filtered.filter(task =>
+        task.title_c?.toLowerCase().includes(query) ||
+        task.description_c?.toLowerCase().includes(query) ||
+        task.category_c?.toLowerCase().includes(query)
       )
     }
 
@@ -65,16 +65,16 @@ const TaskBoard = () => {
 
   const taskStats = useMemo(() => {
     const total = tasks.length
-    const completed = tasks.filter(t => t.completed).length
+const completed = tasks.filter(t => t.completed_c).length
     const today = tasks.filter(t => {
-      const taskDate = new Date(t.dueDate)
+      const taskDate = new Date(t.due_date_c)
       const today = new Date()
       return taskDate.toDateString() === today.toDateString()
     }).length
     const upcoming = tasks.filter(t => {
-      const taskDate = new Date(t.dueDate)
+      const taskDate = new Date(t.due_date_c)
       const today = new Date()
-      return taskDate > today && !t.completed
+      return taskDate > today && !t.completed_c
     }).length
 
     return { total, completed, today, upcoming }

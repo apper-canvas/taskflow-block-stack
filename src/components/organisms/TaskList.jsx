@@ -25,30 +25,30 @@ const TaskList = ({
     )
   }
 
-  const sortedTasks = [...tasks].sort((a, b) => {
+const sortedTasks = [...tasks].sort((a, b) => {
     // Incomplete tasks first
-    if (a.completed !== b.completed) {
-      return a.completed ? 1 : -1
+    if (a.completed_c !== b.completed_c) {
+      return a.completed_c ? 1 : -1
     }
     
     // Then by priority (High, Medium, Low)
     const priorityOrder = { High: 3, Medium: 2, Low: 1 }
-    const aPriority = priorityOrder[a.priority] || 1
-    const bPriority = priorityOrder[b.priority] || 1
+    const aPriority = priorityOrder[a.priority_c] || 1
+    const bPriority = priorityOrder[b.priority_c] || 1
     
     if (aPriority !== bPriority) {
       return bPriority - aPriority
     }
     
     // Then by due date (earliest first)
-    if (a.dueDate && b.dueDate) {
-      return new Date(a.dueDate) - new Date(b.dueDate)
+    if (a.due_date_c && b.due_date_c) {
+      return new Date(a.due_date_c) - new Date(b.due_date_c)
     }
-    if (a.dueDate) return -1
-    if (b.dueDate) return 1
+    if (a.due_date_c) return -1
+    if (b.due_date_c) return 1
     
     // Finally by creation date (newest first)
-    return new Date(b.createdAt) - new Date(a.createdAt)
+    return new Date(b.created_at_c) - new Date(a.created_at_c)
   })
 
   return (

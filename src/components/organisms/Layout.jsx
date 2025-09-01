@@ -11,7 +11,7 @@ const Layout = () => {
 
   return (
     <div className="flex h-screen bg-gray-50">
-      <Sidebar
+<Sidebar
         categories={[]}
         selectedCategory=""
         onCategoryChange={() => {}}

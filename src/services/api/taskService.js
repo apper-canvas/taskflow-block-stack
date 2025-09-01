@@ -1,81 +1,232 @@
-import tasksData from "@/services/mockData/tasks.json"
-
-let tasks = [...tasksData]
-
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+const tableName = 'task_c'
 
 export const taskService = {
   async getAll() {
-    await delay(300)
-    return [...tasks]
+    try {
+      const { ApperClient } = window.ApperSDK
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      })
+
+      const params = {
+        fields: [
+          {"field": {"Name": "Name"}},
+          {"field": {"Name": "title_c"}},
+          {"field": {"Name": "description_c"}},
+          {"field": {"Name": "completed_c"}},
+          {"field": {"Name": "category_c"}},
+          {"field": {"Name": "priority_c"}},
+          {"field": {"Name": "due_date_c"}},
+          {"field": {"Name": "created_at_c"}},
+          {"field": {"Name": "order_c"}},
+          {"field": {"Name": "status_c"}}
+        ],
+        orderBy: [{"fieldName": "Id", "sorttype": "DESC"}]
+      }
+
+      const response = await apperClient.fetchRecords(tableName, params)
+
+      if (!response.success) {
+        console.error(response.message)
+        return []
+      }
+
+      return response.data || []
+    } catch (error) {
+      console.error("Error fetching tasks:", error?.response?.data?.message || error)
+      return []
+    }
   },
 
   async getById(id) {
-    await delay(200)
-    const task = tasks.find(task => task.Id === parseInt(id))
-    if (!task) {
+    try {
+      const { ApperClient } = window.ApperSDK
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      })
+
+      const params = {
+        fields: [
+          {"field": {"Name": "Name"}},
+          {"field": {"Name": "title_c"}},
+          {"field": {"Name": "description_c"}},
+          {"field": {"Name": "completed_c"}},
+          {"field": {"Name": "category_c"}},
+          {"field": {"Name": "priority_c"}},
+          {"field": {"Name": "due_date_c"}},
+          {"field": {"Name": "created_at_c"}},
+          {"field": {"Name": "order_c"}},
+          {"field": {"Name": "status_c"}}
+        ]
+      }
+
+      const response = await apperClient.getRecordById(tableName, parseInt(id), params)
+
+      if (!response.success || !response.data) {
+        throw new Error("Task not found")
+      }
+
+      return response.data
+    } catch (error) {
+      console.error(`Error fetching task ${id}:`, error?.response?.data?.message || error)
       throw new Error("Task not found")
     }
-    return { ...task }
   },
 
   async create(taskData) {
-    await delay(400)
-    const maxId = tasks.length > 0 ? Math.max(...tasks.map(t => t.Id)) : 0
-    const newTask = {
-      Id: maxId + 1,
-      title: taskData.title,
-      description: taskData.description || "",
-      completed: false,
-      category: taskData.category,
-      priority: taskData.priority,
-      dueDate: taskData.dueDate,
-      createdAt: new Date().toISOString(),
-      order: tasks.length + 1
+    try {
+      const { ApperClient } = window.ApperSDK
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      })
+
+      const params = {
+        records: [{
+          Name: taskData.title,
+          title_c: taskData.title,
+          description_c: taskData.description || "",
+          completed_c: false,
+          category_c: taskData.category,
+          priority_c: taskData.priority,
+          due_date_c: taskData.dueDate,
+          created_at_c: new Date().toISOString(),
+          order_c: 1,
+          status_c: taskData.status || "pending"
+        }]
+      }
+
+      const response = await apperClient.createRecord(tableName, params)
+
+      if (!response.success) {
+        console.error(response.message)
+        throw new Error(response.message)
+      }
+
+      if (response.results) {
+        const successful = response.results.filter(r => r.success)
+        const failed = response.results.filter(r => !r.success)
+        
+        if (failed.length > 0) {
+          console.error(`Failed to create ${failed.length} records:${JSON.stringify(failed)}`)
+          throw new Error("Failed to create task")
+        }
+        
+        return successful[0]?.data
+      }
+    } catch (error) {
+      console.error("Error creating task:", error?.response?.data?.message || error)
+      throw error
     }
-    tasks.push(newTask)
-    return { ...newTask }
   },
 
   async update(id, updateData) {
-    await delay(300)
-    const index = tasks.findIndex(task => task.Id === parseInt(id))
-    if (index === -1) {
-      throw new Error("Task not found")
+    try {
+      const { ApperClient } = window.ApperSDK
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      })
+
+      const params = {
+        records: [{
+          Id: parseInt(id),
+          ...(updateData.title && { Name: updateData.title, title_c: updateData.title }),
+          ...(updateData.description !== undefined && { description_c: updateData.description }),
+          ...(updateData.completed !== undefined && { completed_c: updateData.completed }),
+          ...(updateData.category && { category_c: updateData.category }),
+          ...(updateData.priority && { priority_c: updateData.priority }),
+          ...(updateData.dueDate && { due_date_c: updateData.dueDate }),
+          ...(updateData.status && { status_c: updateData.status }),
+          ...(updateData.order !== undefined && { order_c: updateData.order })
+        }]
+      }
+
+      const response = await apperClient.updateRecord(tableName, params)
+
+      if (!response.success) {
+        console.error(response.message)
+        throw new Error(response.message)
+      }
+
+      if (response.results) {
+        const successful = response.results.filter(r => r.success)
+        const failed = response.results.filter(r => !r.success)
+        
+        if (failed.length > 0) {
+          console.error(`Failed to update ${failed.length} records:${JSON.stringify(failed)}`)
+          throw new Error("Failed to update task")
+        }
+        
+        return successful[0]?.data
+      }
+    } catch (error) {
+      console.error("Error updating task:", error?.response?.data?.message || error)
+      throw error
     }
-    
-    tasks[index] = { ...tasks[index], ...updateData }
-    return { ...tasks[index] }
   },
 
   async delete(id) {
-    await delay(250)
-    const index = tasks.findIndex(task => task.Id === parseInt(id))
-    if (index === -1) {
-      throw new Error("Task not found")
+    try {
+      const { ApperClient } = window.ApperSDK
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      })
+
+      const params = { 
+        RecordIds: [parseInt(id)]
+      }
+
+      const response = await apperClient.deleteRecord(tableName, params)
+
+      if (!response.success) {
+        console.error(response.message)
+        throw new Error(response.message)
+      }
+
+      if (response.results) {
+        const successful = response.results.filter(r => r.success)
+        const failed = response.results.filter(r => !r.success)
+        
+        if (failed.length > 0) {
+          console.error(`Failed to delete ${failed.length} records:${JSON.stringify(failed)}`)
+          throw new Error("Failed to delete task")
+        }
+        
+        return successful.length > 0
+      }
+
+      return true
+    } catch (error) {
+      console.error("Error deleting task:", error?.response?.data?.message || error)
+      throw error
     }
-    
-    const deletedTask = tasks.splice(index, 1)[0]
-    return { ...deletedTask }
   },
 
   async toggleComplete(id) {
-    await delay(200)
-    const index = tasks.findIndex(task => task.Id === parseInt(id))
-    if (index === -1) {
-      throw new Error("Task not found")
+    try {
+      const task = await this.getById(id)
+      return await this.update(id, { completed: !task.completed_c })
+    } catch (error) {
+      console.error("Error toggling task completion:", error?.response?.data?.message || error)
+      throw error
     }
-    
-    tasks[index].completed = !tasks[index].completed
-    return { ...tasks[index] }
   },
 
   async reorderTasks(reorderedTasks) {
-    await delay(300)
-    tasks = reorderedTasks.map((task, index) => ({
-      ...task,
-      order: index + 1
-    }))
-    return [...tasks]
+    try {
+      const updatePromises = reorderedTasks.map((task, index) =>
+        this.update(task.Id, { order: index + 1 })
+      )
+      
+      await Promise.all(updatePromises)
+      return await this.getAll()
+    } catch (error) {
+      console.error("Error reordering tasks:", error?.response?.data?.message || error)
+      throw error
+    }
   }
 }
